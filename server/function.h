@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <errno.h>
-#define N 128 
+#define N 128
 #define MAX 1024
 #define ERRLOG(errmsg) do{\
                         perror(errmsg);\
@@ -40,9 +40,6 @@ typedef struct msg
 PP p[MAX];
 QQ q[MAX];
 static int o=0;
-struct sockaddr_in serveraddr,clientaddr;
-socklen_t addrlen=sizeof(serveraddr);
-char buf[N]={0};
 
 
 void login();

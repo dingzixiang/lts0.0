@@ -7,10 +7,12 @@ int main(int argc, char **argv)
         perror("socket");
         return -1;
     } 
+    struct sockaddr_in serveraddr,clientaddr;
     serveraddr.sin_family=AF_INET;
     serveraddr.sin_addr.s_addr=inet_addr("192.168.12.13");
     serveraddr.sin_port=htons(atoi("9999"));
     setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,(const char*)"192.168.12.13",sizeof(int));
+    socklen_t addrlen=sizeof(serveraddr);
     if(bind(sockfd, (struct sockaddr *)&serveraddr, addrlen) == -1) 
     { 
         ERRLOG("bind error"); 
@@ -26,6 +28,7 @@ int main(int argc, char **argv)
     int ret,i;
     FD_SET(sockfd,&readfds);
     int acceptfd[MAX]={0};
+    char buf[N]={0};
     while(1)
     {
         tmpfds=readfds;

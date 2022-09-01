@@ -5,13 +5,13 @@ void login()
 }
 int enroll()
 {
-    system("clear");
+//    system("clear");
     sqlite3 *ppdb;
     char a='0'; 
     char id[16]={0};
     char pass[16]={0};
     int state=0;
-    char sql[128]={0};
+    char sql[256]={0};
     int ret = sqlite3_open("stu.db",&ppdb); 
     if(ret != SQLITE_OK) 
     { 
@@ -25,8 +25,8 @@ int enroll()
     printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
     return -1;
     }
-    memset(sql,0,sizeof(sql));  
-    sprintf(sql,"insert into stu values('%s','%s',0,0,0);",id,pass);
+    memset(sql,0,sizeof(sql));    
+    sprintf(sql,"insert into stu values('%s','%s',0,0,0);",q[o].id,q[o].buf);
     ret=sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
     if(ret != SQLITE_OK)
     {
@@ -34,10 +34,10 @@ int enroll()
         return -1;
     }
     memset(sql,0,sizeof(sql));
-    sprintf(sql,"select * from stu:");
+    sprintf(sql,"select * from stu;");
     char **result;
     int row,column;
-    sqlite3_get_table(ppdb,sql,&result,&row,&column,NULL);
+    ret=sqlite3_get_table(ppdb,sql,&result,&row,&column,NULL);
     if(ret!=SQLITE_OK)
     {
         printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
@@ -49,7 +49,7 @@ int enroll()
     {
         for(j=0;j<column;j++)
         {
-            printf("%s=%s",result[j],result[index]);
+            printf(" %s=%s ",result[j],result[index]);
             index++;
         }
         putchar(10);
