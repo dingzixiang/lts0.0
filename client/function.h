@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <pthread.h>
 #define N 128 
 #define MAX 1024
 #define ERRLOG(errmsg) do{\
@@ -28,21 +29,39 @@ typedef struct sta
     int state; //0:未登录   1:登录
     int power; //0:普通用户 1:超级用户
     int say;   //0:被禁言   1:正常聊天
+    
 }PP;
 typedef struct msg
 {
-    int cmd;//1：登录 2：注册 3：查看全体在线成员 4：发消息
+    int cmd;//1：登录 2：注册 3：查看全体在线成员 4：私发消息 5：群发消息 6:文件发送 7:文件接受 8:文件上传 9:文件下载 10:禁言 11：踢人 12:改权限
     char id[16];//登录id
-    int destination;//0:服务器1:全体2:个人
+    char destination[16];//0:服务器 all:全体   其他用户Id:个人
     char buf[N];//cmd 为1或2时为密码，3为空，4为消息内容
 }QQ;
-PP p[MAX];
-QQ q[MAX];
+PP p;
+QQ q;
+QQ q1;
+QQ qq[N];
 static int o=0;
 int sockfd;
 void menu1();
+void menuusr();
 void menu3();
 
-void login();
+
+int login();
+int logout();
 int enroll();
+int sifa();
+int qunfa();
+void look();
+int wenjianout1();
+int wenjianout2();
+int wenjianin1();
+int wenjianin2(FILE *fp); 
+void *Myfun(void *m);
+int jinyan();
+int tiren();
+int power();
+int record();
 #endif

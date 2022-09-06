@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     struct sockaddr_in serveraddr;
     serveraddr.sin_family=AF_INET;
     serveraddr.sin_addr.s_addr=inet_addr("192.168.12.13");
-    serveraddr.sin_port=htons(atoi("9999"));
+    serveraddr.sin_port=htons(atoi("8888"));
     socklen_t addrlen=sizeof(serveraddr);
     if(connect(sockfd,(struct sockaddr*)&serveraddr,addrlen)==-1)
     {
@@ -18,6 +18,7 @@ int main(int argc, char **argv)
         return -1;
     }
     char x=0;
+ONE:
     menu1();
     x=getchar();
     while ((ch = getchar()) != EOF && ch != '\n');
@@ -28,6 +29,7 @@ int main(int argc, char **argv)
     break;
     case 50:
     enroll();
+    goto ONE;
     break;
     case 51:
     exit(0);
@@ -35,6 +37,5 @@ int main(int argc, char **argv)
     printf("错误输入,请重新输入\n");
     break;
     }
-    
     return 0;
 }
