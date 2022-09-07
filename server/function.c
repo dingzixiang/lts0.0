@@ -128,25 +128,25 @@ int enroll1()
     sprintf(sql,"select * from stu;");
     char **result1;
     int row1,column1;
-    int index1 =column1;
     ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
     if(ret!=SQLITE_OK)
     {
         printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
         return -1;
     }
-    for(int i=0;i<row1;i++)
+    int i=0,j=0;
+    for(i=0;i<row1;i++)
     {
-            if(strcmp(result1[6+6*i],"root")==0)
-                {
-                    ret = sqlite3_close(ppdb); 
-                    if(ret != SQLITE_OK) 
-                    { 
-                        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
-                        return -1;
-                    }
-                    return 0;
-                }
+        if(strcmp(result1[6+6*i],"root")==0)
+        {
+            ret = sqlite3_close(ppdb); 
+            if(ret != SQLITE_OK) 
+            { 
+                printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+                return -1;
+            }
+            return 0;               
+        }
     }
     memset(sql,0,sizeof(sql));    
     sprintf(sql,"insert into stu values('root','root',0,1,0,0);");
@@ -166,7 +166,6 @@ int enroll1()
         printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
         return -1;
     }
-    int i=0,j=0;
     int index=column;
     for(i=0;i<row;i++)
     {
@@ -211,32 +210,32 @@ int enroll(int fd)
     sprintf(sql,"select * from stu;");
     char **result1;
     int row1,column1;
-    int index1 =column1;
     ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
     if(ret!=SQLITE_OK)
     {
         printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
         return -1;
     }
-    for(int i=0;i<row1;i++)
+    int i=0,j=0;
+    for(i=0;i<row1;i++)
     {
-            if(strcmp(result1[6+6*i],q[fd].id)==0)
-                {
-                    printf("已注册\n");
-                    strcpy(q[fd].buf,"已注册\n");
-                    ret=send(fd,&q[fd],sizeof(q[fd]),0);
-                    if (ret == -1)
-                    {
-                        ERRLOG("send");
-                    }
-                    ret = sqlite3_close(ppdb); 
-                    if(ret != SQLITE_OK) 
-                    { 
-                        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
-                        return -1;
-                    }
-                    return 0;
-                }
+        if(strcmp(result1[6+6*i],q[fd].id)==0)
+        {
+            printf("已注册\n");
+            strcpy(q[fd].buf,"已注册\n");
+            ret=send(fd,&q[fd],sizeof(q[fd]),0);
+            if (ret == -1)
+            {
+                ERRLOG("send");
+            }
+            ret = sqlite3_close(ppdb); 
+            if(ret != SQLITE_OK) 
+            { 
+                printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+                return -1;
+            }
+            return 0;               
+        }
     }
     memset(sql,0,sizeof(sql));    
     sprintf(sql,"insert into stu values('%s','%s',0,0,0,%d);",q[fd].id,q[fd].buf,fd);
@@ -256,7 +255,6 @@ int enroll(int fd)
         printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
         return -1;
     }
-    int i=0,j=0;
     int index=column;
     for(i=0;i<row;i++)
     {
@@ -267,11 +265,11 @@ int enroll(int fd)
         }
         putchar(10);
     }
-    strcpy(q[fd].buf,"注册成功\n");
+    strcpy(q[fd].buf,"未注册\n");
     ret=send(fd,&q[fd],sizeof(q[fd]),0);
     if (ret == -1)
     {
-    ERRLOG("send");
+        ERRLOG("send");
     }
     ret = sqlite3_close(ppdb); 
     if(ret != SQLITE_OK) 
@@ -331,8 +329,30 @@ int look(int fd)
 int sifa(int fd)
 {
     sqlite3 *ppdb;
+    sqlite3 *ppdb1;
     int fd1;
     char sql[256]={0};
+    char sql1[256]={0};
+    int ret1 = sqlite3_open("record.db",&ppdb1); 
+    if(ret1 != SQLITE_OK) 
+    { 
+    printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb1)); 
+    return -1;
+    }
+    memset(sql1,0,sizeof(sql1)); 
+    sprintf(sql1,"insert into record values('%s','%s','%s');",q[fd].id,q[fd].destination,q[fd].buf);
+    ret1=sqlite3_exec(ppdb1,sql1,NULL,NULL,NULL);
+    if(ret1 != SQLITE_OK)
+    {
+        printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb1));
+        return -1;
+    }
+    ret1 = sqlite3_close(ppdb1); 
+    if(ret1 != SQLITE_OK) 
+    { 
+        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb1)); 
+        return -1;
+    }
     int ret = sqlite3_open("stu.db",&ppdb); 
     if(ret != SQLITE_OK) 
     { 
@@ -398,8 +418,30 @@ int sifa(int fd)
 int qunfa(int fd)
 {
     sqlite3 *ppdb;
+    sqlite3 *ppdb1;
     int fd1;
     char sql[256]={0};
+    char sql1[256]={0};
+    int ret1 = sqlite3_open("record.db",&ppdb1); 
+    if(ret1 != SQLITE_OK) 
+    { 
+    printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb1)); 
+    return -1;
+    }
+    memset(sql1,0,sizeof(sql1)); 
+    sprintf(sql1,"insert into record values('%s','%s','%s');",q[fd].id,q[fd].destination,q[fd].buf);
+    ret1=sqlite3_exec(ppdb1,sql1,NULL,NULL,NULL);
+    if(ret1 != SQLITE_OK)
+    {
+        printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb1));
+        return -1;
+    }
+    ret1 = sqlite3_close(ppdb1); 
+    if(ret1 != SQLITE_OK) 
+    { 
+        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb1)); 
+        return -1;
+    }
     int ret = sqlite3_open("stu.db",&ppdb); 
     if(ret != SQLITE_OK) 
     { 

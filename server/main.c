@@ -73,12 +73,6 @@ int main(int argc, char **argv)
             {
                 ERRLOG("accept error"); 
             }
-            int ret1 = sqlite3_open("record.db",&ppdb1); 
-            if(ret1 != SQLITE_OK) 
-            { 
-            printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb1)); 
-            return -1;
-            }
             printf("[%d]客户端%s:%d连接了 \n",acceptfd[i],inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
             FD_SET(acceptfd[i], &readfds);
             if(maxfd<acceptfd[i])
@@ -102,24 +96,10 @@ int main(int argc, char **argv)
                         logout(acceptfd[i]);
                         close(acceptfd[i]);
                         FD_CLR(acceptfd[i],&readfds);
-                        ret1 = sqlite3_close(ppdb1); 
-                        if(ret1 != SQLITE_OK) 
-                        { 
-                        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb1)); 
-                        return -1;
-                        }
                         printf("[%d]客户端%s:%d下线了 \n",acceptfd[i],inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
                     }
                     else
                     {
-                        memset(sql1,0,sizeof(sql1)); 
-                        sprintf(sql1,"insert into record values('%s','%s','%s');",q[acceptfd[i]].id,q[acceptfd[i]].destination,q[acceptfd[i]].buf);
-                        ret1=sqlite3_exec(ppdb1,sql1,NULL,NULL,NULL);
-                        if(ret1 != SQLITE_OK)
-                        {
-                            printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb1));
-                            return -1;
-                        }
                         printf("[%d]客户端%s:%d收到了消息: %s\n",acceptfd[i],inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port),q[acceptfd[i]].buf);
                         if(q[acceptfd[i]].cmd==2)
                         {
