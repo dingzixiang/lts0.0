@@ -512,6 +512,7 @@ int enroll()
     int id=0,state=0;
     q.cmd=2;
     strcpy(q.destination,"0");
+TWO:
     printf("请输入");
     printf("\t\t****你注册的ID****\t\t\n");
     gets(ID);
@@ -523,6 +524,20 @@ int enroll()
     if(send(sockfd,&q,sizeof(q),0)==-1)
     {
         ERRLOG("send failed");
+    }
+    if(recv(sockfd,&q,sizeof(q),0)==-1)
+    {
+        ERRLOG("send failed");
+    }
+    if(strcmp(q.buf,"注册成功\n")==0)
+    {    
+        printf("注册成功\n");
+        sleep(1);
+    }
+    else if(strcmp(q.buf,"已注册\n")==0)
+    {
+        printf("请重新输入账号密码\n");
+        goto TWO;
     }
     return 0;
 }

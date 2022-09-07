@@ -124,6 +124,30 @@ int enroll1()
     printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
     return -1;
     }
+    memset(sql,0,sizeof(sql));
+    sprintf(sql,"select * from stu;");
+    char **result1;
+    int row1,column1;
+    int index1 =column1;
+    ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
+    if(ret!=SQLITE_OK)
+    {
+        printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+    }
+    for(int i=0;i<row1;i++)
+    {
+            if(strcmp(result1[6+6*i],"root")==0)
+                {
+                    ret = sqlite3_close(ppdb); 
+                    if(ret != SQLITE_OK) 
+                    { 
+                        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+                        return -1;
+                    }
+                    return 0;
+                }
+    }
     memset(sql,0,sizeof(sql));    
     sprintf(sql,"insert into stu values('root','root',0,1,0,0);");
     ret=sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
@@ -183,6 +207,37 @@ int enroll(int fd)
     printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
     return -1;
     }
+    memset(sql,0,sizeof(sql));
+    sprintf(sql,"select * from stu;");
+    char **result1;
+    int row1,column1;
+    int index1 =column1;
+    ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
+    if(ret!=SQLITE_OK)
+    {
+        printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+    }
+    for(int i=0;i<row1;i++)
+    {
+            if(strcmp(result1[6+6*i],q[fd].id)==0)
+                {
+                    printf("已注册\n");
+                    strcpy(q[fd].buf,"已注册\n");
+                    ret=send(fd,&q[fd],sizeof(q[fd]),0);
+                    if (ret == -1)
+                    {
+                        ERRLOG("send");
+                    }
+                    ret = sqlite3_close(ppdb); 
+                    if(ret != SQLITE_OK) 
+                    { 
+                        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+                        return -1;
+                    }
+                    return 0;
+                }
+    }
     memset(sql,0,sizeof(sql));    
     sprintf(sql,"insert into stu values('%s','%s',0,0,0,%d);",q[fd].id,q[fd].buf,fd);
     ret=sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
@@ -211,6 +266,12 @@ int enroll(int fd)
             index++;
         }
         putchar(10);
+    }
+    strcpy(q[fd].buf,"注册成功\n");
+    ret=send(fd,&q[fd],sizeof(q[fd]),0);
+    if (ret == -1)
+    {
+    ERRLOG("send");
     }
     ret = sqlite3_close(ppdb); 
     if(ret != SQLITE_OK) 
