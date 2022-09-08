@@ -612,17 +612,6 @@ int wenjianout(int fd)
     printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
     return -1;
     }
-    // q[fd].cmd=9;
-    // strcpy(q[fd].destination,q[fd].buf);
-    // strcpy(q[fd].buf,"ready");
-    // printf("%s\n",q[fd].destination);
-    // printf("%s\n",q[fd].buf);
-    // ret=send(fd,&q[fd],sizeof(q[fd]),0);
-    // if (ret == -1)
-    // {
-    //     ERRLOG("send");
-    // }    
-
 }
 int upload(int fd,FILE *fp)
 {
@@ -715,5 +704,57 @@ int jinyan(int fd)
         printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
         return -1;
         }
+    }
+    ret = sqlite3_close(ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
+    }
+}
+int tiren(int fd)
+{
+    sqlite3 *ppdb;
+    int fd1;
+    char sql[256]={0};
+    int ret = sqlite3_open("stu.db",&ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
+    }
+    if(strcmp(q[fd].buf,"踢出")==0)
+    {
+        memset(sql,0,sizeof(sql)); 
+        sprintf(sql,"update stu set state =0 where id = '%s';",q[fd].destination);
+        ret =sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
+        if(ret != SQLITE_OK)
+        {
+        printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+        }
+        strcpy(q[fd].buf,"您被管理员踢出聊天室");
+    }
+    memset(sql,0,sizeof(sql));
+    sprintf(sql,"select * from stu where id = '%s';",q[fd].destination);
+    char **result1;
+    int row1,column1;
+    ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
+    if(ret!=SQLITE_OK)
+    {
+        printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+    }
+        fd1=atoi(result1[11]);
+        ret=send(fd1,&q[fd],sizeof(q[fd]),0);
+        if (ret == -1)
+        {
+            ERRLOG("send");
+        }   
+    ret = sqlite3_close(ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
     }
 }

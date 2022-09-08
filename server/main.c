@@ -149,6 +149,10 @@ int main(int argc, char **argv)
                         {
                             jinyan(acceptfd[i]);
                         }
+                        if(q[acceptfd[i]].cmd==11)
+                        {
+                            tiren(acceptfd[i]);
+                        }
                     }
                     memset(buf,0,sizeof(buf));
                     break;

@@ -15,14 +15,15 @@ void menuusr()
     printf("\t\t****4.发送文件****\t\t\n");
     printf("\t\t****5.接收文件****\t\t\n");
     printf("\t\t****6.查看本地消息记录****\t\t\n");
-    printf("\t\t****7.退出聊天室****\t\t\n");       
+    printf("\t\t****7.设置快捷消息****\t\t\n");
+    printf("\t\t****8.退出聊天室****\t\t\n");       
 }
 void menusuper()
 {
     printf("\t\t****1.群发消息****\t\t\n");//快捷消息或手动消息
     printf("\t\t****2.私发消息****\t\t\n");
     printf("\t\t****3.查看在线人员****\t\t\n");
-    printf("\t\t****4.禁言用户****\t\t\n");
+    printf("\t\t****4.修改用户发言权限****\t\t\n");
     printf("\t\t****5.踢出用户****\t\t\n");
     printf("\t\t****6.更改其他用户权限****\t\t\n");
     printf("\t\t****7.退出聊天室****\t\t\n");   
@@ -68,6 +69,10 @@ void *Myfun(void *m)
         strcat(q1.buf,"\n");
         printf("%s发来了%s",q1.id,q1.buf);
         }
+        if(q1.cmd ==11)
+        {
+        ti =1;
+        }
     }
     else if(q1.cmd ==6)
     {
@@ -106,7 +111,11 @@ int sifa()
     char a='0'; 
     char duixiang[32]={0};
     char xiaoxi[32]={0};
+    char quick[16]={0};
     int id=0,state=0;
+    int b=0;
+    int c=0;
+    int d=0;
     q.cmd=4;
     ret1 = sqlite3_open("record.db",&ppdb3); 
     if(ret1 != SQLITE_OK) 
@@ -118,10 +127,72 @@ int sifa()
     printf("\t\t****发送对象****\t\t\n");
     gets(duixiang); 
     strcpy(q.destination,duixiang);
+    printf("请选择你的发言方式\n");
+    printf("\t\t****1.快捷表情****\t\t\n");
+    printf("\t\t****2.手动消息****\t\t\n");
+    printf("\t\t****3.您设置的快捷消息****\t\t\n");
+    scanf("%d",&b);
+    while ((ch = getchar()) != EOF && ch != '\n');
+    if(b==1)
+    {
+FOUR:
+        printf("\t\t****1.快捷表情1****\t\t\n");
+        printf("\t\t****2.快捷表情2****\t\t\n");
+        scanf("%d",&c);
+        while ((ch = getchar()) != EOF && ch != '\n');
+        switch(c)
+        {
+            case 1:
+            strcpy(q.buf,"快捷表情1");
+            break;
+            case 2:
+            strcpy(q.buf,"快捷表情2");
+            break;
+            default:
+            printf("错误输入,请重新输入\n");
+            goto FOUR;
+            break;
+        }
+    }
+    if(b==2)
+    {
     printf("请输入");
     printf("\t\t****消息内容****\t\t\n");
     gets(xiaoxi);
     strcpy(q.buf,xiaoxi);
+    }
+    if(b=3)
+    {
+    printf("请输入");
+    printf("\t\t****快捷键组合****\t\t\n");
+    gets(quick);
+    strcpy(q.buf,quick);
+    sqlite3 *ppdb;
+    char sql[256]={0};
+    int ret = sqlite3_open("quick.db",&ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
+    }    
+    memset(sql,0,sizeof(sql));
+    sprintf(sql,"select * from quick where quick='%s';",quick);
+    char **result1;
+    int row1,column1;
+    ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
+    if(ret!=SQLITE_OK)
+    {
+        printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+    }
+    strcpy(q.buf,result1[4]);
+    ret = sqlite3_close(ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
+    }
+    }
     if(send(sockfd,&q,sizeof(q),0)==-1)
     {
         ERRLOG("send failed");
@@ -359,7 +430,31 @@ int jinyan()
 }
 int tiren()
 {
-    ;
+    char ID[32]={0};
+    q.cmd=11;
+    int a;
+THREE:
+    printf("请输入");
+    printf("\t\t****被踢出聊天室的ID****\t\t\n");
+    gets(ID);
+    strcpy(q.destination,ID);     
+    printf("请选择");
+    printf("\t\t****1.确认踢出此ID:%s****\t\t\n",q.destination);
+    printf("\t\t****2.输入错误ID,重新输入****\t\t\n");   
+    scanf("%d",&a);
+    while ((ch = getchar()) != EOF && ch != '\n');
+    if(a==1)
+    {
+        strcpy(q.buf,"踢出");
+    }
+    if(a==2)
+    {
+        goto THREE;
+    }
+    if(send(sockfd,&q,sizeof(q),0)==-1)
+    {
+        ERRLOG("send failed");
+    } 
 }
 int power()
 {
@@ -429,7 +524,7 @@ ONE:
         menusuper();
         char y=0;
         y=getchar();
-        while ((ch = getchar()) != EOF && ch != '\n');
+        while ((ch = getchar()) != EOF && ch != '\n');     
         switch (y)
         {
         case 49:
@@ -451,6 +546,9 @@ ONE:
         power();
         break;
         case 55:
+        quick();
+        break;
+        case 56:
         exit(0);
         default:
         printf("错误输入,请重新输入\n");
@@ -466,6 +564,10 @@ ONE:
         char x=0;
         x=getchar();
         while ((ch = getchar()) != EOF && ch != '\n');
+        if(ti ==1)
+        {
+            exit(0);
+        }   
         switch (x)
         {
         case 49:
@@ -487,6 +589,9 @@ ONE:
         record();
         break;
         case 55:
+        quick();
+        break;
+        case 56:
         exit(0);
         default:
         printf("错误输入,请重新输入\n");
@@ -575,4 +680,131 @@ int record()
         return -1;
     }
     return 0;   
+}
+int quick()
+{
+    sqlite3 *ppdb;
+    char sql[256]={0};
+    int ret = sqlite3_open("quick.db",&ppdb); 
+    if(ret != SQLITE_OK) 
+    { 
+    printf("sqlite3_open:%s\n",sqlite3_errmsg(ppdb)); 
+    return -1;
+    }
+    sprintf(sql,"create table if not exists quick(quick char,word char,close int);");
+    ret =sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
+    if(ret != SQLITE_OK)
+    {
+    printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
+    return -1;
+    }
+    memset(sql,0,sizeof(sql));
+    int a=0,b=0,c=0,d=0;
+    char qik[16]={0};
+    char qik1[16]={0};
+    char qik2[32]={0};
+FIVE:
+    printf("请选择\n");
+    printf("\t\t****1.绑定快捷键与快捷消息****\t\t\n");
+    printf("\t\t****2.查看全部快捷键以及消息内容****\t\t\n");
+    printf("\t\t****3.退回菜单****\t\t\n");
+    scanf("%d",&a);
+    while ((ch = getchar()) != EOF && ch != '\n');
+    if(a==1)
+    {
+        printf("请选择\n");
+        printf("\t\t****1.绑定快捷键组合****\t\t\n");
+        printf("\t\t****2.绑定对应快捷消息****\t\t\n");
+        scanf("%d",&b);
+        while ((ch = getchar()) != EOF && ch != '\n');
+        if(b==1)
+        {
+            printf("请输入需要绑定的快捷键组合,按回车键结束");
+            gets(qik);
+            memset(sql,0,sizeof(sql));
+            sprintf(sql,"select * from quick;");
+            char **result1;
+            int row1,column1;
+            ret=sqlite3_get_table(ppdb,sql,&result1,&row1,&column1,NULL);
+            if(ret!=SQLITE_OK)
+            {
+                printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+                return -1;
+            }
+            int i=0,j=0;
+            for(i=0;i<row1;i++)
+            {
+                if(strcmp(result1[3+3*i],qik)==0)
+                {
+                    printf("已设置此快捷键组合,请重新选择需要的功能\n");
+                    goto FIVE;            
+                }
+            }
+            memset(sql,0,sizeof(sql));    
+            sprintf(sql,"insert into quick values('%s','hellow',0);",qik);
+            ret=sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
+            if(ret != SQLITE_OK)
+            {
+                printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
+                return -1;
+            }            
+            printf("快捷键组合设置完成(默认对应快捷消息为hellow)");            
+        }
+        if(b==2)
+        {
+            printf("请输入需要被绑定的快捷键组合,按回车键结束");
+            gets(qik1);
+            printf("请输入需要重新绑定的快捷消息,按回车键结束");
+            gets(qik2);
+            memset(sql,0,sizeof(sql));
+            sprintf(sql,"update quick set word ='%s' where quick = '%s';",qik2,qik1);
+            ret =sqlite3_exec(ppdb,sql,NULL,NULL,NULL);
+            if(ret != SQLITE_OK)
+            {
+            printf("sqlite3_exec:%s\n",sqlite3_errmsg(ppdb));
+            return -1;
+            }
+            printf("绑定成功\n");
+            goto FIVE;
+        }
+    }
+    if(a==2)
+    {
+    memset(sql,0,sizeof(sql));
+    sprintf(sql,"select * from quick;");
+    char **result;
+    int row,column;
+    ret=sqlite3_get_table(ppdb,sql,&result,&row,&column,NULL);
+    if(ret!=SQLITE_OK)
+    {
+        printf("sqlite3_get_table:%s\n",sqlite3_errmsg(ppdb));
+        return -1;
+    }
+    int i=0,j=0;
+    int index=column;
+    for(i=0;i<row;i++)
+    {
+        for(j=0;j<column;j++)
+        {
+            printf(" %s=%s ",result[j],result[index]);
+            index++;
+        }
+        putchar(10);
+    }
+        ret = sqlite3_close(ppdb); 
+        if(ret != SQLITE_OK) 
+        { 
+        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+        return -1;
+        }
+    }
+    if(a==3)
+    {
+        ret = sqlite3_close(ppdb); 
+        if(ret != SQLITE_OK) 
+        { 
+        printf("sqlite3_close:%s\n",sqlite3_errmsg(ppdb)); 
+        return -1;
+        }
+    }
 }

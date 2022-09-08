@@ -57,4 +57,5 @@ int wenjianout(int fd);
 int upload(int fd,FILE *fp);
 int download(int fd);
 int jinyan(int fd);
+int tiren(int fd);
 #endif

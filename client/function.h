@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <pthread.h>
+#include <signal.h>
 #define N 128 
 #define MAX 1024
 #define ERRLOG(errmsg) do{\
@@ -43,6 +44,8 @@ QQ q;
 QQ q1;
 QQ qq[N];
 static int o=0;
+static int ti=0;
+static int l=0;
 int sockfd;
 void menu1();
 void menuusr();
@@ -64,4 +67,5 @@ int jinyan();
 int tiren();
 int power();
 int record();
+int quick();
 #endif
